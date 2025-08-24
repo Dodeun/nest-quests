@@ -15,17 +15,17 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  async findAll() {
+  findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string) {
     return this.usersService.findOneById(+id);
   }
 
   @Post()
-  async create(
+  create(
     @Body()
     user: UserEntity,
   ) {
@@ -33,7 +33,7 @@ export class UsersController {
   }
 
   @Put()
-  async update(
+  update(
     @Body()
     user: UserEntity,
   ) {

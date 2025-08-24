@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from 'src/users/user.entity/user.entity';
 import { UsersService } from 'src/users/users.service';
+import { UnauthorizedException } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -11,7 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  private async validate(email: string): Promise<UserEntity> {
+  public async validate(email: string): Promise<UserEntity> {
     return this.usersService.findOneByEmail(email);
   }
 
@@ -25,5 +26,21 @@ export class AuthService {
     return this.usersService.save(user);
   }
 
-  public async login({ email, password }): Promise<any | { status: number }> {}
+  public async login(
+    user: UserEntity,
+  ): Promise<{ expires_in: number; access_token: string }> {
+    return this.validate(user.email).then((userData) => {
+      if (!userData || userData.password != this.hash(user.password)) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      const payload = `${userData.email}`;
+      const accessToken = this.jwtService.sign(payload);
+
+      return {
+        expires_in: 3600,
+        access_token: accessToken,
+      };
+    });
+  }
 }
